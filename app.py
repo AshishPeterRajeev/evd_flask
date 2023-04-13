@@ -25,6 +25,7 @@ def hello():
 
 @app.route('/api/location', methods=['POST'])
 def add_location():
+    client = MongoClient(uri)
     data = request.json
     latitude = data['latitude']
     longitude = data['longitude']
