@@ -24,7 +24,7 @@ connect()
 def hello():
     return jsonify('hello world')
 
-@app.route('/api/location', methods=['POST'])
+@app.route('/api/location', methods=['GET','POST'])
 def add_location():
     data = request.json
     latitude = data['latitude']
