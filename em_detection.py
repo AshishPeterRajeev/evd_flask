@@ -23,15 +23,15 @@ radius = 100 # meters
 
 while True:
     # Replace the URL with the URL that fetches the GPS coordinates of the vehicle
-    # url = 'https://api.example.com/gps'
+    url = 'https://api.example.com/gps'
     
-    # # Fetch the GPS location from the URL
-    # response = requests.get(url)
+    # Fetch the GPS location from the URL
+    response = requests.get(url)
     
-    # # Parse the JSON response to get the latitude and longitude
-    # data = response.json()
-    # lat = data['latitude']
-    # lon = data['longitude']
+    # Parse the JSON response to get the latitude and longitude
+    data = response.json()
+    lat = data['latitude']
+    lon = data['longitude']
     lat = 40.7167
     lon = -74.0074
     

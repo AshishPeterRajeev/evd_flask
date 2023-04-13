@@ -1,25 +1,40 @@
+
+    
+    
 from flask import Flask, request, jsonify
-import sqlite3
+from pymongo import MongoClient
 
 app = Flask(__name__)
 
-@app.route('/api/location', methods=['GET','POST'])
+uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
+
+
+# Create a new client and connect to the server
+client = MongoClient(uri)
+
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
+
+@app.route('/api/location', methods=['POST'])
 def add_location():
-    latitude = request.form['latitude']
-    longitude = request.form['longitude']
-    device_id = request.form['device_id']
+    data = request.json
+    latitude = data['latitude']
+    longitude = data['longitude']
+    device_id = data['device_id']
 
-    conn = sqlite3.connect('locations.db')
-    c = conn.cursor()
-    c.execute('INSERT INTO locations (latitude, longitude, device_id) VALUES (?, ?, ?)',
-              (latitude, longitude, device_id))
-    conn.commit()
-    conn.close()
+    db = client['locationdb']
+    collection = db['coordinates']
+    result = collection.insert_one({
+        'latitude': latitude,
+        'longitude': longitude,
+        'device_id': device_id
+    })
 
-    return 'Location added successfully!'
+    return jsonify({'message': 'Location added successfully!'})
 
-@app.route('/',methods=['GET'])
-def hello():
-    return jsonify('hello world')
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0')
