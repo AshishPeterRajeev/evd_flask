@@ -18,6 +18,10 @@ try:
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
     print(e)
+    
+@app.route('/',methods=['GET'])
+def hello():
+    return jsonify('hello world')
 
 @app.route('/api/location', methods=['POST'])
 def add_location():
