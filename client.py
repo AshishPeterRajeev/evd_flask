@@ -16,5 +16,5 @@ thread.start()
 
 # Main thread can perform other tasks while listening for data
 while True:
-    print('Main thread is still running')
+    print("main")
     time.sleep(1)
