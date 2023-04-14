@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 import pymongo, json
+import requests
+import time
 
 import math
 
@@ -11,7 +13,8 @@ def distance(lat1, lon1, lat2, lon2):
     dlat = rlat2 - rlat1
     dlon = rlon2 - rlon1
     a = math.sin(dlat/2)**2 + math.cos(rlat1) * math.cos(rlat2) * math.sin(dlon/2)**2
-    c = 2 * math.asin(math.sqrt(a))
+    c = 2 * math.atan2( math.sqrt(a), math.sqrt(1 - a) )
+    # c = 2*math.asin(math.sqrt(a))
     r = 6371 # Radius of the earth in km
     return c * r * 1000 # Convert to meters
 
@@ -38,37 +41,59 @@ fixed_lat = 9.4300800
 fixed_lon = 76.5939460
 
 # Radius around the fixed coordinate
-radius = 100 # meters
-uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
-client = MongoClient(uri)
-db = client["locationdb"]
-collection = db["coordinates"]
+radius = 500 # meters
+# uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
+# client = MongoClient(uri)
+# db = client["locationdb"]
+# collection = db["coordinates"]
 
-# Get the latest added document
-latest_doc = collection.find_one(sort=[("_id", -1)])
-print(type(latest_doc),latest_doc)
+# # Get the latest added document
+# latest_doc = collection.find_one(sort=[("_id", -1)])
+# print(type(latest_doc),latest_doc)
+
 # GPS coordinates of the vehicle
-# lat = 51.5098
-# lon = -0.1180
-lat = float(latest_doc["latitude"])
-lon = float(latest_doc["longitude"])
-print(lat,lon)
-# Calculate the distance between the vehicle and the fixed coordinate
-dist = distance(lat, lon, fixed_lat, fixed_lon)
-bearing = calculate_bearing(fixed_lat, fixed_lon, lat, lon)
-print(bearing)
+previousLatitude = 0.0
+previousLongitude = 0.0
 
-# Check if the distance is less than or equal to the radius
-if dist <= radius:
-    print("Vehicle has entered the area")
-else:
-    print("Vehicle is outside the area")
+while True:
+#     # Replace "http://localhost:5000/data" with the URL of your Flask route
+    response = requests.get("https://flask-gps-evd.onrender.com/data")
+    json_data = response.json()
+    lat = json_data["latitude"]
+    lon = json_data["longitude"]
+    
+    if( previousLatitude!=lat or previousLongitude!=lon):
+        print(lat, lon)
+        previousLatitude = lat
+        previousLongitude = lon
+    
+    time.sleep(1)
 
-if bearing > 315 or bearing < 45 :
-    print("Lane 1 - North")
-elif bearing > 45 and bearing < 135 :
-    print("Lane 2 - East")
-elif bearing > 135 and bearing < 225 :
-    print("Lane 3 - South")
-elif bearing > 225 and bearing < 315 :
-    print("Lane 4 - West")
+# lat = 9.4300800
+# lon = 76.5939460
+
+# lat = 9.430295034352834
+# lon = 76.5983158941853
+
+#     lat = float(latest_doc["latitude"])
+#     lon = float(latest_doc["longitude"])
+    print(lat,lon)
+    # Calculate the distance between the vehicle and the fixed coordinate
+    dist = round(distance(lat, lon, fixed_lat, fixed_lon),3)
+    bearing = calculate_bearing(fixed_lat, fixed_lon, lat, lon)
+    print(dist,bearing)
+
+    # Check if the distance is less than or equal to the radius
+    if dist <= radius:
+        print("Vehicle has entered the area")
+    else:
+        print("Vehicle is outside the area")
+
+    if bearing > 315 or bearing < 45 :
+        print("Lane 1 - North")
+    elif bearing > 45 and bearing < 135 :
+        print("Lane 2 - East")
+    elif bearing > 135 and bearing < 225 :
+        print("Lane 3 - South")
+    elif bearing > 225 and bearing < 315 :
+        print("Lane 4 - West")
