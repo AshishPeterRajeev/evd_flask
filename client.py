@@ -1,20 +1,34 @@
-from socketIO_client import SocketIO, LoggingNamespace
-from threading import Thread
-import time
+import pymongo
+import json
 
-def listen_for_data():
-    def on_new_data(data):
-        print('New data received:', data)
+uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
 
-    with SocketIO('https://flask-gps-evd.onrender.com', params={'namespace': '/api/location'}) as socketIO:
-        socketIO.on('new data', on_new_data, namespace='/api/location')
-        socketIO.wait()
+client = pymongo.MongoClient(uri)
 
-# Start a separate thread to listen for data
-thread = Thread(target=listen_for_data)
-thread.start()
+coordinates = {}
 
-# Main thread can perform other tasks while listening for data
-while True:
-    print("main")
-    time.sleep(1)
+db = client['locationdb']
+collection = db['coordinates']
+
+
+# Query for items with latitude and longitude fields
+cursor = collection.find({"latitude": {"$exists": True}, "longitude": {"$exists": True}})
+
+# Create a list of dictionaries to hold the data
+data_list = []
+
+for item in cursor:
+    data_dict = {}
+    data_dict["_id"] = str(item["_id"])
+    data_dict["latitude"] = item["latitude"]
+    data_dict["longitude"] = item["longitude"]
+    data_dict["device_id"] = item["device_id"]
+    data_list.append(data_dict)
+
+# Convert the list of dictionaries to a JSON object
+json_data = json.dumps(data_list)
+print(json_data)
+# Return the JSON object
+
+
+

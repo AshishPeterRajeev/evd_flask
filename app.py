@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
-
+import pymongo,json
 app = Flask(__name__)
 
 uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
@@ -40,6 +40,39 @@ def add_location():
     })
 
     return jsonify({'message': 'Location added successfully!'})
+
+@app.route('/data',methods=['GET'])
+def data():
+    uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
+
+    client = pymongo.MongoClient(uri)
+
+    coordinates = {}
+
+    db = client['locationdb']
+    collection = db['coordinates']
+
+
+    # Query for items with latitude and longitude fields
+    cursor = collection.find({"latitude": {"$exists": True}, "longitude": {"$exists": True}})
+
+    # Create a list of dictionaries to hold the data
+    data_list = []
+
+    for item in cursor:
+        data_dict = {}
+        data_dict["_id"] = str(item["_id"])
+        data_dict["latitude"] = item["latitude"]
+        data_dict["longitude"] = item["longitude"]
+        data_dict["device_id"] = item["device_id"]
+        data_list.append(data_dict)
+
+    # Convert the list of dictionaries to a JSON object
+    json_data = json.dumps(data_list)
+    # print(json_data)
+    return json_data
+# Return the JSON object
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
