@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import time
 
 app = Flask(__name__)
 
@@ -17,6 +18,8 @@ def handle_data():
 
 @app.route('/data', methods=['GET'])
 def get_data():
+    
+    time.sleep(6)
     # Return the data dictionary as JSON
     return jsonify(data_dict)
 
