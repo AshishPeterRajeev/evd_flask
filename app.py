@@ -1,45 +1,17 @@
-from flask import Flask, request, jsonify
-from pymongo import MongoClient
+from flask import Flask, request
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
-uri = "mongodb+srv://codehubash:serverpass16@cluster0.ptyboko.mongodb.net/?retryWrites=true&w=majority"
-
-# Create a new client and connect to the server
-client = None
-
-# Send a ping to confirm a successful connection
-def connect():
-    global client
-    client = MongoClient(uri)
-    try:
-        client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
-    except Exception as e:
-        print(e)
-
-connect()
-
-@app.route('/',methods=['GET'])
-def hello():
-    return jsonify('hello world')
-
-@app.route('/api/location', methods=['GET','POST'])
-def add_location():
-    data = request.json
-    latitude = data['latitude']
-    longitude = data['longitude']
-    device_id = data['device_id']
-
-    db = client['locationdb']
-    collection = db['coordinates']
-    result = collection.insert_one({
-        'latitude': latitude,
-        'longitude': longitude,
-        'device_id': device_id
-    })
-
-    return jsonify({'message': 'Location added successfully!'})
+@app.route('/location', methods=['POST'])
+def process_location():
+    data = request.get_json()
+    # Process the data
+    processed_data = {'status': 'ok'}
+    # Emit the processed data to the socket
+    socketio.emit('new data', data)
+    return 'Data received and processed'
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    socketio.run(app)
