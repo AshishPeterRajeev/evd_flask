@@ -68,9 +68,9 @@ def data():
         data_list.append(data_dict)
 
     # Convert the list of dictionaries to a JSON object
-    json_data = json.dumps(data_list)
+    # json_data = json.dumps(data_list)
     # print(json_data)
-    return json_data
+    return jsonify(data_list)
 # Return the JSON object
 
 
