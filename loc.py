@@ -37,8 +37,8 @@ def calculate_bearing(lat1, lon1, lat2, lon2):
 # Fixed coordinate of the traffic light system
 # fixed_lat = 51.5074
 # fixed_lon = 0.1278
-fixed_lat = 9.4200830
-fixed_lon = 76.5939460
+fixed_lat = 9.4200800
+fixed_lon = 76.5939400
 
 # Radius around the fixed coordinate
 radius = 500 # meters
@@ -52,50 +52,55 @@ radius = 500 # meters
 # print(type(latest_doc),latest_doc)
 
 # GPS coordinates of the vehicle
-previousLatitude = 0.0
-previousLongitude = 0.0
 
-while True:
+
+def loc():
+    # previousLatitude = 0.0
+    # previousLongitude = 0.0
+    # while True:
 #     # Replace "http://localhost:5000/data" with the URL of your Flask route
     response = requests.get("https://flask-gps-evd.onrender.com/data")
     json_data = response.json()
     lat = json_data["latitude"]
     lon = json_data["longitude"]
     
-    if( previousLatitude!=lat or previousLongitude!=lon):
-        print(lat, lon)
-        previousLatitude = lat
-        previousLongitude = lon
+    # if( previousLatitude!=lat or previousLongitude!=lon):
+    #     print(lat, lon)
+    #     previousLatitude = lat
+    #     previousLongitude = lon
+
+    print(float(lat),float(lon))
+    # Calculate the distance between the vehicle and the fixed coordinate
+    dist = round(distance(float(lat), float(lon), fixed_lat, fixed_lon),3)
+    bearing = calculate_bearing(fixed_lat, fixed_lon, float(lat), float(lon))
+    print(dist,bearing)
+
+    # Check if the distance is less than or equal to the radius
+    if dist <= radius:
+        status = 1
+        print("Vehicle has entered the area")
+    else:
+        status = 0
+        print("Vehicle is outside the area")
+
+    if bearing > 315 or bearing < 45 :
+        direction = "Lane 1 - North"
+        # print("Lane 1 - North")
+    elif bearing > 45 and bearing < 135 :
+        direction = "Lane 2 - East"
+        # print("Lane 2 - East")
+    elif bearing > 135 and bearing < 225 :
+        direction = "Lane 3 - South"
+        # print("Lane 3 - South")
+    elif bearing > 225 and bearing < 315 :
+        direction = "Lane 4 - West"
+        # print("Lane 4 - West")
     
-
-
-        # lat = 9.4300800
-        # lon = 76.5939460
-
-        # lat = 9.430295034352834
-        # lon = 76.5983158941853
-
-        #     lat = float(latest_doc["latitude"])
-        #     lon = float(latest_doc["longitude"])
-        print(float(lat),float(lon))
-        # Calculate the distance between the vehicle and the fixed coordinate
-        dist = round(distance(float(lat), float(lon), fixed_lat, fixed_lon),3)
-        bearing = calculate_bearing(fixed_lat, fixed_lon, float(lat), float(lon))
-        print(dist,bearing)
-
-        # Check if the distance is less than or equal to the radius
-        if dist <= radius:
-            print("Vehicle has entered the area")
-        else:
-            print("Vehicle is outside the area")
-
-        if bearing > 315 or bearing < 45 :
-            print("Lane 1 - North")
-        elif bearing > 45 and bearing < 135 :
-            print("Lane 2 - East")
-        elif bearing > 135 and bearing < 225 :
-            print("Lane 3 - South")
-        elif bearing > 225 and bearing < 315 :
-            print("Lane 4 - West")
+    if(status==1):
+        return direction
+        
+        # time.sleep(1)
             
-        time.sleep(1)
+while True:
+    locate=loc()
+    print(locate)
